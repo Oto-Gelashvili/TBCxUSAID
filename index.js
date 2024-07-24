@@ -22,6 +22,7 @@ const dropdownMenuElementsUL = document.querySelectorAll(
 );
 const ulArrows = document.querySelectorAll('.fa-angle-down');
 const kitContainers = document.querySelectorAll('.kit-container');
+const anchors = document.querySelectorAll('a');
 
 // Utility Functions
 function hideActive() {
@@ -57,6 +58,13 @@ function initializeToolsDropdownLine() {
     toolsDropdownLine1.style.transform = 'translateZ(0) scaleX(1) rotate(0deg)';
   }
 }
+// Remove focus from the element
+anchors.forEach((link) => {
+  link.addEventListener('mouseleave', () => {
+    link.blur();
+    document.querySelector('.primary-hero button').blur();
+  });
+});
 
 // Language Change Functions
 function changeLanguage(fromLang, toLang) {
@@ -184,3 +192,102 @@ kitContainers.forEach((kit) => {
     window.location.href = url;
   });
 });
+
+//slider
+
+const slider = document.querySelector('.offers-carousel');
+const thumb = document.querySelector('.scrollbar-thumb');
+const track = document.querySelector('.scrollbar-track');
+let isDragging = false;
+let startX, thumbStartX;
+let speed = 0.9;
+
+slider.addEventListener('mousedown', (e) => {
+  dragginStart(e);
+});
+thumb.addEventListener('mousedown', (e) => {
+  dragginStart(e);
+});
+track.addEventListener('mousedown', (e) => {
+  dragginStart(e);
+});
+document.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    slide(e);
+  }
+});
+document.addEventListener('mouseup', () => {
+  draggingEnd();
+  adjustThumb();
+});
+
+function dragginStart(e) {
+  isDragging = true;
+  thumb.style.transition = '0s';
+
+  slider.style.cursor = 'grabbing';
+  thumb.style.cursor = 'grabbing';
+  track.style.cursor = 'grabbing';
+  startX = e.clientX;
+  thumbStartX = thumb.offsetLeft;
+}
+
+function draggingEnd() {
+  isDragging = false;
+  slider.style.cursor = 'grab';
+  thumb.style.cursor = 'grab';
+  track.style.cursor = 'grab';
+}
+
+function slide(e) {
+  const trackRect = track.getBoundingClientRect();
+  const mouseChangeX = (startX - e.clientX) * speed;
+  let newThumbX = thumbStartX + mouseChangeX;
+
+  // Constrain the thumb within the track
+  newThumbX = Math.max(
+    thumb.offsetWidth * -0.7,
+    Math.min(newThumbX, trackRect.width - thumb.offsetWidth * 0.3)
+  );
+  overflowThumbSpeed();
+
+  // Update thumb position
+  thumb.style.left = `${newThumbX}px`;
+}
+
+function adjustThumb() {
+  const trackRect = track.getBoundingClientRect();
+  const thumbRect = thumb.getBoundingClientRect();
+  const thumbPosition = thumbRect.left - trackRect.left;
+  const snapPoints = [
+    0,
+    trackRect.width * 0.25,
+    trackRect.width * 0.5,
+    trackRect.width * 0.75,
+  ];
+  let closestPoint = snapPoints[0];
+  let minDistance = Math.abs(thumbPosition - snapPoints[0]);
+
+  for (let i = 1; i < snapPoints.length; i++) {
+    const distance = Math.abs(thumbPosition - snapPoints[i]);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestPoint = snapPoints[i];
+    }
+  }
+  thumb.style.left = `${closestPoint}px`;
+  thumb.style.transition = '0.5s';
+}
+function overflowThumbSpeed() {
+  // for some reason could do it with speed adjustments
+  // as soon as thumb would make overflow it woulds trat blinking with speed adjustment
+  // so instead used transition
+  const trackRect = track.getBoundingClientRect();
+  const thumbRect = thumb.getBoundingClientRect();
+  const thumbPosition = thumbRect.left - trackRect.left;
+  if (thumbPosition > trackRect.width * 0.75 || thumbPosition < 0) {
+    thumb.style.transition = '1.5s';
+  } else {
+    thumb.style.transition = '0';
+  }
+}
