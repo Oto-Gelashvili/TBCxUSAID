@@ -23,6 +23,24 @@ const dropdownMenuElementsUL = document.querySelectorAll(
 const ulArrows = document.querySelectorAll('.fa-angle-down');
 const kitContainers = document.querySelectorAll('.kit-container');
 const anchors = document.querySelectorAll('a');
+const arrowSvgs = document.querySelectorAll('.arrow-container svg');
+const slider = document.querySelector('.offers-carousel');
+const sliderCont = document.querySelector('.offers-carousel-container');
+const carouselItem = document.querySelector('.offers-carousel-item');
+const numOfImages = 6;
+let currentStep = 0;
+let totalSteps =
+  numOfImages - Math.floor(slider.clientWidth / carouselItem.clientWidth) + 1;
+
+let sliderStartX;
+
+const thumb = document.querySelector('.scrollbar-thumb');
+const track = document.querySelector('.scrollbar-track');
+let isDragging = false;
+let startX, thumbStartX;
+let speed = 0.7;
+let movedLeftSlow = false;
+let movedRightSlow = false;
 
 // Utility Functions
 function hideActive() {
@@ -60,7 +78,7 @@ function initializeToolsDropdownLine() {
 }
 // Remove focus from the element
 anchors.forEach((link) => {
-  link.addEventListener('mouseleave', () => {
+  link.addEventListener('pointerleave', () => {
     link.blur();
     document.querySelector('.primary-hero button').blur();
   });
@@ -195,48 +213,98 @@ kitContainers.forEach((kit) => {
 
 //slider
 
-const slider = document.querySelector('.offers-carousel');
-const thumb = document.querySelector('.scrollbar-thumb');
-const track = document.querySelector('.scrollbar-track');
-let isDragging = false;
-let startX, thumbStartX;
-let speed = 0.9;
+sliderCont.addEventListener('mousedown', (e) => {
+  if (e.target === sliderCont) {
+    dragginStart(e);
+  }
+});
+sliderCont.addEventListener('touchstart', (e) => {
+  if (e.target === sliderCont) {
+    dragginStart(e.touches[0]);
+  }
+});
 
 slider.addEventListener('mousedown', (e) => {
-  dragginStart(e);
+  if (e.target === slider) {
+    dragginStart(e);
+  }
 });
+slider.addEventListener('touchstart', (e) => {
+  if (e.target === slider) {
+    dragginStart(e.touches[0]);
+  }
+});
+
 thumb.addEventListener('mousedown', (e) => {
-  dragginStart(e);
+  if (e.target === thumb) {
+    dragginStart(e);
+  }
 });
+thumb.addEventListener('touchstart', (e) => {
+  if (e.target === thumb) {
+    dragginStart(e.touches[0]);
+  }
+});
+
 track.addEventListener('mousedown', (e) => {
-  dragginStart(e);
+  if (e.target === track) {
+    dragginStart(e);
+  }
 });
+track.addEventListener('touchstart', (e) => {
+  if (e.target === track) {
+    dragginStart(e.touches[0]);
+  }
+});
+
 document.addEventListener('mousemove', (e) => {
   if (isDragging) {
     slide(e);
   }
 });
+document.addEventListener('touchmove', (e) => {
+  if (isDragging) {
+    slide(e.touches[0]);
+  }
+});
+
 document.addEventListener('mouseup', () => {
+  if (isDragging) {
+    adjustThumb();
+    adjustSlider();
+  }
   draggingEnd();
-  adjustThumb();
+});
+document.addEventListener('touchend', () => {
+  if (isDragging) {
+    adjustThumb();
+    adjustSlider();
+  }
+  draggingEnd();
 });
 
 function dragginStart(e) {
   isDragging = true;
   thumb.style.transition = '0s';
+  slider.style.transition = '0s';
 
-  slider.style.cursor = 'grabbing';
+  sliderCont.style.cursor = 'grabbing';
   thumb.style.cursor = 'grabbing';
   track.style.cursor = 'grabbing';
+
   startX = e.clientX;
-  thumbStartX = thumb.offsetLeft;
+  thumbStartX = getTranslateX(thumb);
+  sliderStartX = getTranslateX(slider);
 }
 
 function draggingEnd() {
   isDragging = false;
-  slider.style.cursor = 'grab';
+  sliderCont.style.cursor = 'grab';
   thumb.style.cursor = 'grab';
   track.style.cursor = 'grab';
+  lastDirection = 0;
+  movedLeftSlow = false;
+  movedRightSlow = false;
 }
 
 function slide(e) {
@@ -244,50 +312,78 @@ function slide(e) {
   const mouseChangeX = (startX - e.clientX) * speed;
   let newThumbX = thumbStartX + mouseChangeX;
 
-  // Constrain the thumb within the track
   newThumbX = Math.max(
     thumb.offsetWidth * -0.7,
     Math.min(newThumbX, trackRect.width - thumb.offsetWidth * 0.3)
   );
-  overflowThumbSpeed();
 
-  // Update thumb position
-  thumb.style.left = `${newThumbX}px`;
+  thumb.style.transform = `translateX(${newThumbX}px)`;
+
+  if (newThumbX > thumbStartX && Math.abs(newThumbX - thumbStartX) < 25) {
+    movedRightSlow = true;
+  } else if (
+    newThumbX < thumbStartX &&
+    Math.abs(newThumbX - thumbStartX) < 25
+  ) {
+    movedLeftSlow = true;
+  }
+
+  const sliderWidth = slider.scrollWidth - slider.clientWidth;
+  const sliderMoveRatio = sliderWidth / trackRect.width;
+  const thumbMove = newThumbX - thumbStartX;
+  const newSliderX = sliderStartX - thumbMove * sliderMoveRatio;
+  slider.style.transform = `translateX(${newSliderX}px)`;
 }
 
 function adjustThumb() {
-  const trackRect = track.getBoundingClientRect();
-  const thumbRect = thumb.getBoundingClientRect();
-  const thumbPosition = thumbRect.left - trackRect.left;
-  const snapPoints = [
-    0,
-    trackRect.width * 0.25,
-    trackRect.width * 0.5,
-    trackRect.width * 0.75,
-  ];
-  let closestPoint = snapPoints[0];
-  let minDistance = Math.abs(thumbPosition - snapPoints[0]);
+  const thumbStartX = getTranslateX(thumb);
+  const trackWidth = track.clientWidth;
+  const stepWidth = trackWidth / totalSteps;
 
-  for (let i = 1; i < snapPoints.length; i++) {
-    const distance = Math.abs(thumbPosition - snapPoints[i]);
-    if (distance < minDistance) {
-      minDistance = distance;
-      closestPoint = snapPoints[i];
-    }
-  }
-  thumb.style.left = `${closestPoint}px`;
-  thumb.style.transition = '0.5s';
-}
-function overflowThumbSpeed() {
-  // for some reason could do it with speed adjustments
-  // as soon as thumb would make overflow it woulds trat blinking with speed adjustment
-  // so instead used transition
-  const trackRect = track.getBoundingClientRect();
-  const thumbRect = thumb.getBoundingClientRect();
-  const thumbPosition = thumbRect.left - trackRect.left;
-  if (thumbPosition > trackRect.width * 0.75 || thumbPosition < 0) {
-    thumb.style.transition = '1.5s';
+  if (movedLeftSlow && currentStep !== 0) {
+    currentStep--;
+  } else if (movedRightSlow && currentStep < totalSteps - 1) {
+    currentStep++;
   } else {
-    thumb.style.transition = '0';
+    currentStep = Math.max(
+      0,
+      Math.min(Math.round(thumbStartX / stepWidth), totalSteps - 1)
+    );
   }
+  const newPosition = (currentStep / totalSteps) * track.clientWidth;
+  thumb.style.transform = `translateX(${newPosition}px)`;
+  thumb.style.transition = '1s';
+}
+
+function adjustSlider() {
+  const itemWidth = carouselItem.getBoundingClientRect().width;
+  slider.style.transform = `translateX(${(-itemWidth - 30) * currentStep}px)`;
+  slider.style.transition = '1s';
+}
+
+//arrows
+arrowSvgs.forEach((svg, index) => {
+  isDragging = true;
+  svg.addEventListener('click', function () {
+    this.style.color = '#747C7F';
+    const otherIndex = index === 0 ? 1 : 0;
+    arrowSvgs[otherIndex].style.color = '#182cc0';
+
+    if (index === 1 && currentStep < totalSteps - 1) {
+      currentStep++;
+    } else if (index === 0 && currentStep > 0) {
+      currentStep--;
+    }
+    const newPosition = (currentStep / totalSteps) * track.clientWidth;
+    thumb.style.transform = `translateX(${newPosition}px)`;
+    const itemWidth = carouselItem.getBoundingClientRect().width;
+    slider.style.transform = `translateX(${(-itemWidth - 30) * currentStep}px)`;
+  });
+});
+
+// Helper function to get translateX value
+function getTranslateX(element) {
+  const style = window.getComputedStyle(element);
+  const matrix = new DOMMatrixReadOnly(style.transform);
+  return matrix.m41;
 }
