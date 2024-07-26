@@ -24,23 +24,12 @@ const ulArrows = document.querySelectorAll('.fa-angle-down');
 const kitContainers = document.querySelectorAll('.kit-container');
 const anchors = document.querySelectorAll('a');
 const arrowSvgs = document.querySelectorAll('.arrow-container svg');
-const slider = document.querySelector('.offers-carousel');
-const sliderCont = document.querySelector('.offers-carousel-container');
-const carouselItem = document.querySelector('.offers-carousel-item');
-const numOfImages = 6;
-let currentStep = 0;
-let totalSteps =
-  numOfImages - Math.floor(slider.clientWidth / carouselItem.clientWidth) + 1;
-
-let sliderStartX;
-
-const thumb = document.querySelector('.scrollbar-thumb');
-const track = document.querySelector('.scrollbar-track');
-let isDragging = false;
-let startX, thumbStartX;
-let speed = 0.7;
-let movedLeftSlow = false;
-let movedRightSlow = false;
+const sliders = document.querySelectorAll('.slider');
+const sliderContainers = document.querySelectorAll('.slider-cont');
+const thumbs = document.querySelectorAll('.scrollbar-thumb');
+const tracks = document.querySelectorAll('.scrollbar-track');
+const carouselItems = document.querySelectorAll('.offers-carousel-item');
+const numOfImagesArray = [6, 3];
 
 // Utility Functions
 function hideActive() {
@@ -210,180 +199,267 @@ kitContainers.forEach((kit) => {
     window.location.href = url;
   });
 });
-
-//slider
-
-sliderCont.addEventListener('mousedown', (e) => {
-  if (e.target === sliderCont) {
-    dragginStart(e);
-  }
-});
-sliderCont.addEventListener('touchstart', (e) => {
-  if (e.target === sliderCont) {
-    dragginStart(e.touches[0]);
-  }
-});
-
-slider.addEventListener('mousedown', (e) => {
-  if (e.target === slider) {
-    dragginStart(e);
-  }
-});
-slider.addEventListener('touchstart', (e) => {
-  if (e.target === slider) {
-    dragginStart(e.touches[0]);
-  }
-});
-
-thumb.addEventListener('mousedown', (e) => {
-  if (e.target === thumb) {
-    dragginStart(e);
-  }
-});
-thumb.addEventListener('touchstart', (e) => {
-  if (e.target === thumb) {
-    dragginStart(e.touches[0]);
-  }
-});
-
-track.addEventListener('mousedown', (e) => {
-  if (e.target === track) {
-    dragginStart(e);
-  }
-});
-track.addEventListener('touchstart', (e) => {
-  if (e.target === track) {
-    dragginStart(e.touches[0]);
-  }
-});
-
-document.addEventListener('mousemove', (e) => {
-  if (isDragging) {
-    slide(e);
-  }
-});
-document.addEventListener('touchmove', (e) => {
-  if (isDragging) {
-    slide(e.touches[0]);
-  }
-});
-
-document.addEventListener('mouseup', () => {
-  if (isDragging) {
-    adjustThumb();
-    adjustSlider();
-  }
-  draggingEnd();
-});
-document.addEventListener('touchend', () => {
-  if (isDragging) {
-    adjustThumb();
-    adjustSlider();
-  }
-  draggingEnd();
-});
-
-function dragginStart(e) {
-  isDragging = true;
-  thumb.style.transition = '0s';
-  slider.style.transition = '0s';
-
-  sliderCont.style.cursor = 'grabbing';
-  thumb.style.cursor = 'grabbing';
-  track.style.cursor = 'grabbing';
-
-  startX = e.clientX;
-  thumbStartX = getTranslateX(thumb);
-  sliderStartX = getTranslateX(slider);
-}
-
-function draggingEnd() {
-  isDragging = false;
-  sliderCont.style.cursor = 'grab';
-  thumb.style.cursor = 'grab';
-  track.style.cursor = 'grab';
-  lastDirection = 0;
-  movedLeftSlow = false;
-  movedRightSlow = false;
-}
-
-function slide(e) {
-  const trackRect = track.getBoundingClientRect();
-  const mouseChangeX = (startX - e.clientX) * speed;
-  let newThumbX = thumbStartX + mouseChangeX;
-
-  newThumbX = Math.max(
-    thumb.offsetWidth * -0.7,
-    Math.min(newThumbX, trackRect.width - thumb.offsetWidth * 0.3)
-  );
-
-  thumb.style.transform = `translateX(${newThumbX}px)`;
-
-  if (newThumbX > thumbStartX && Math.abs(newThumbX - thumbStartX) < 25) {
-    movedRightSlow = true;
-  } else if (
-    newThumbX < thumbStartX &&
-    Math.abs(newThumbX - thumbStartX) < 25
+class Slider {
+  constructor(
+    slider,
+    sliderCont,
+    thumb,
+    track,
+    carouselItem,
+    numOfImages,
+    arrowSvgs
   ) {
-    movedLeftSlow = true;
-  }
+    this.slider = slider;
+    this.sliderCont = sliderCont;
+    this.thumb = thumb;
+    this.track = track;
+    this.carouselItem = carouselItem;
+    this.numOfImages = numOfImages;
+    this.arrowSvgs = arrowSvgs;
+    this.currentStep = 0;
+    this.isDragging = false;
+    this.startX = 0;
+    this.thumbStartX = 0;
+    this.sliderStartX = 0;
+    this.speed = 0.7;
+    this.movedLeft = false;
+    this.movedRight = false;
+    this.totalSteps =
+      this.numOfImages -
+      Math.floor(slider.clientWidth / carouselItem.clientWidth) +
+      1;
+    this.setThumbWidth();
+    this.initEvents();
 
-  const sliderWidth = slider.scrollWidth - slider.clientWidth;
-  const sliderMoveRatio = sliderWidth / trackRect.width;
-  const thumbMove = newThumbX - thumbStartX;
-  const newSliderX = sliderStartX - thumbMove * sliderMoveRatio;
-  slider.style.transform = `translateX(${newSliderX}px)`;
-}
-
-function adjustThumb() {
-  const thumbStartX = getTranslateX(thumb);
-  const trackWidth = track.clientWidth;
-  const stepWidth = trackWidth / totalSteps;
-
-  if (movedLeftSlow && currentStep !== 0) {
-    currentStep--;
-  } else if (movedRightSlow && currentStep < totalSteps - 1) {
-    currentStep++;
-  } else {
-    currentStep = Math.max(
-      0,
-      Math.min(Math.round(thumbStartX / stepWidth), totalSteps - 1)
+    window.addEventListener(
+      'resize',
+      this.debounce(() => {
+        this.reinitialize();
+      }, 250)
     );
   }
-  const newPosition = (currentStep / totalSteps) * track.clientWidth;
-  thumb.style.transform = `translateX(${newPosition}px)`;
-  thumb.style.transition = '1s';
-}
 
-function adjustSlider() {
-  const itemWidth = carouselItem.getBoundingClientRect().width;
-  slider.style.transform = `translateX(${(-itemWidth - 30) * currentStep}px)`;
-  slider.style.transition = '1s';
-}
+  setThumbWidth() {
+    const thumbWidth = this.track.clientWidth / this.totalSteps - 1;
+    this.thumb.style.width = `${thumbWidth}px`;
+  }
+  reinitialize() {
+    this.totalSteps =
+      this.numOfImages -
+      Math.floor(this.slider.clientWidth / this.carouselItem.clientWidth) +
+      1;
 
-//arrows
-arrowSvgs.forEach((svg, index) => {
-  isDragging = true;
-  svg.addEventListener('click', function () {
-    this.style.color = '#747C7F';
-    const otherIndex = index === 0 ? 1 : 0;
-    arrowSvgs[otherIndex].style.color = '#182cc0';
+    this.currentStep = 0;
+    this.thumb.style.transform = 'translateX(0)';
+    this.slider.style.transform = 'translateX(0)';
+    this.setThumbWidth();
 
-    if (index === 1 && currentStep < totalSteps - 1) {
-      currentStep++;
-    } else if (index === 0 && currentStep > 0) {
-      currentStep--;
+    this.adjustSlider();
+    this.adjustThumb();
+  }
+  debounce(func, wait) {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+  initEvents() {
+    this.sliderCont.addEventListener('mousedown', (e) => this.draggingStart(e));
+    this.sliderCont.addEventListener('touchstart', (e) =>
+      this.draggingStart(e.touches[0])
+    );
+
+    this.slider.addEventListener('mousedown', (e) => this.draggingStart(e));
+    this.slider.addEventListener('touchstart', (e) =>
+      this.draggingStart(e.touches[0])
+    );
+
+    this.thumb.addEventListener('mousedown', (e) => this.draggingStart(e));
+    this.thumb.addEventListener('touchstart', (e) =>
+      this.draggingStart(e.touches[0])
+    );
+
+    this.track.addEventListener('mousedown', (e) => this.draggingStart(e));
+    this.track.addEventListener('touchstart', (e) =>
+      this.draggingStart(e.touches[0])
+    );
+    document.addEventListener(
+      'mousemove',
+      (e) => this.isDragging && this.slide(e)
+    );
+    document.addEventListener(
+      'touchmove',
+      (e) => this.isDragging && this.slide(e.touches[0])
+    );
+
+    document.addEventListener(
+      'mouseup',
+      () => this.isDragging && this.endDragging()
+    );
+    document.addEventListener(
+      'touchend',
+      () => this.isDragging && this.endDragging()
+    );
+    this.arrowSvgs.forEach((svg, index) => {
+      svg.addEventListener('click', () => this.handleArrowClick(index));
+    });
+  }
+
+  handleArrowClick(index) {
+    const isLeftArrow = index % 2 === 0;
+    const isRightArrow = index % 2 === 1;
+
+    if (this.arrowSvgs) {
+      this.arrowSvgs[index].style.color = '#747C7F';
+      this.arrowSvgs[isLeftArrow ? index + 1 : index - 1].style.color =
+        '#182cc0';
     }
-    const newPosition = (currentStep / totalSteps) * track.clientWidth;
-    thumb.style.transform = `translateX(${newPosition}px)`;
-    const itemWidth = carouselItem.getBoundingClientRect().width;
-    slider.style.transform = `translateX(${(-itemWidth - 30) * currentStep}px)`;
-  });
+
+    if (isRightArrow && this.currentStep < this.totalSteps - 1) {
+      this.currentStep++;
+    } else if (isLeftArrow && this.currentStep > 0) {
+      this.currentStep--;
+    }
+
+    const newPosition =
+      (this.currentStep / this.totalSteps) * this.track.clientWidth;
+    this.thumb.style.transform = `translateX(${newPosition}px)`;
+    const itemWidth = this.carouselItem.getBoundingClientRect().width;
+    if (this.currentStep === this.totalSteps - 1) {
+      this.slider.style.transform = `translateX(${
+        -this.slider.scrollWidth + this.slider.clientWidth
+      }px)`;
+    } else {
+      this.slider.style.transform = `translateX(${
+        (-itemWidth - 30) * this.currentStep
+      }px)`;
+    }
+  }
+  draggingStart(e) {
+    this.isDragging = true;
+    this.thumb.style.transition = '0s';
+    this.slider.style.transition = '0s';
+
+    this.sliderCont.style.cursor = 'grabbing';
+    this.thumb.style.cursor = 'grabbing';
+    this.track.style.cursor = 'grabbing';
+
+    this.startX = e.clientX;
+    this.thumbStartX = this.getTranslateX(this.thumb);
+    this.sliderStartX = this.getTranslateX(this.slider);
+  }
+
+  endDragging() {
+    this.isDragging = false;
+    this.adjustThumb();
+    this.adjustSlider();
+
+    // The rest of the endDragging logic
+    this.sliderCont.style.cursor = 'grab';
+    this.thumb.style.cursor = 'grab';
+    this.track.style.cursor = 'grab';
+    this.movedLeft = false;
+    this.movedRight = false;
+  }
+
+  slide(e) {
+    const trackRect = this.track.getBoundingClientRect();
+    const mouseChangeX = (this.startX - e.clientX) * this.speed;
+    let newThumbX = this.thumbStartX + mouseChangeX;
+
+    newThumbX = Math.max(
+      this.thumb.offsetWidth * -0.7,
+      Math.min(newThumbX, trackRect.width - this.thumb.offsetWidth * 0.3)
+    );
+
+    this.thumb.style.transform = `translateX(${newThumbX}px)`;
+
+    if (newThumbX > this.thumbStartX) {
+      this.movedRight = true;
+    } else if (newThumbX < this.thumbStartX) {
+      this.movedLeft = true;
+    }
+
+    const sliderWidth = this.slider.scrollWidth - this.slider.clientWidth;
+    const sliderMoveRatio = sliderWidth / trackRect.width;
+    const thumbMove = newThumbX - this.thumbStartX;
+    const newSliderX = this.sliderStartX - thumbMove * sliderMoveRatio;
+    this.slider.style.transform = `translateX(${newSliderX}px)`;
+  }
+
+  adjustThumb() {
+    const thumbStartX = this.getTranslateX(this.thumb);
+    const trackWidth = this.track.clientWidth;
+    const stepWidth = trackWidth / this.totalSteps;
+
+    if (this.movedLeft && this.currentStep !== 0) {
+      this.currentStep = Math.max(
+        0,
+        Math.min(Math.floor(thumbStartX / stepWidth), this.totalSteps - 1)
+      );
+    } else if (this.movedRight && this.currentStep < this.totalSteps - 1) {
+      this.currentStep = Math.max(
+        0,
+        Math.min(Math.ceil(thumbStartX / stepWidth), this.totalSteps - 1)
+      );
+    }
+    //  else {
+    //   this.currentStep = Math.max(
+    //     0,
+    //     Math.min(Math.round(thumbStartX / stepWidth), this.totalSteps - 1)
+    //   );
+    // }
+    const newPosition =
+      (this.currentStep / this.totalSteps) * this.track.clientWidth;
+    this.thumb.style.transform = `translateX(${newPosition}px)`;
+    this.thumb.style.transition = '1s';
+  }
+
+  adjustSlider() {
+    const itemWidth = this.carouselItem.getBoundingClientRect().width;
+    if (this.currentStep === this.totalSteps - 1) {
+      this.slider.style.transform = `translateX(${
+        -this.slider.scrollWidth + this.slider.clientWidth
+      }px)`;
+    } else {
+      this.slider.style.transform = `translateX(${
+        (-itemWidth - 30) * this.currentStep
+      }px)`;
+    }
+    this.slider.style.transition = '1s';
+  }
+
+  // Helper function to get translateX value
+  getTranslateX(element) {
+    const style = window.getComputedStyle(element);
+    const matrix = new DOMMatrixReadOnly(style.transform);
+    return matrix.m41;
+  }
+}
+
+sliders.forEach((slider, index) => {
+  new Slider(
+    slider,
+    sliderContainers[index],
+    thumbs[index],
+    tracks[index],
+    carouselItems[index],
+    numOfImagesArray[index],
+    arrowSvgs
+  );
 });
 
-// Helper function to get translateX value
-function getTranslateX(element) {
-  const style = window.getComputedStyle(element);
-  const matrix = new DOMMatrixReadOnly(style.transform);
-  return matrix.m41;
-}
+// digital bank link
+document.querySelector('.low').addEventListener('click', function () {
+  var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+  if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+    // iOS device
+    window.location.href = 'https://apps.apple.com/us/app/tbc-bank/id766598432';
+  } else {
+    // Assume Android or other device
+    window.location.href =
+      'https://play.google.com/store/apps/details?id=com.icomvision.bsc.tbc&hl=en';
+  }
+});
