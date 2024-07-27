@@ -4,8 +4,8 @@ const navMenuWrappers = document.querySelectorAll('.nav-menu .pointer');
 const underlines = document.querySelectorAll('.underline');
 const hiddenMenuCont = document.querySelector('.hidden-menu-container');
 const hiddenDropdownLists = document.querySelectorAll('.hidden-dropdown-list');
-const nonActiveLang = document.querySelector('.non-active-language');
-const activeLanguage = document.querySelector('.avtive-language');
+const activeLangs = document.querySelectorAll('.avtive-language');
+const nonActiveLangs = document.querySelectorAll('.non-active-language');
 const geoContent = document.querySelectorAll('.geo');
 const engContent = document.querySelectorAll('.eng');
 const toolsDropdown = document.querySelector('.tools-dropdown');
@@ -29,7 +29,7 @@ const sliderContainers = document.querySelectorAll('.slider-cont');
 const thumbs = document.querySelectorAll('.scrollbar-thumb');
 const tracks = document.querySelectorAll('.scrollbar-track');
 const carouselItems = document.querySelectorAll('.offers-carousel-item');
-const numOfImagesArray = [6, 3];
+const numOfImagesArray = [6, 3, 4];
 
 // Utility Functions
 function hideActive() {
@@ -69,7 +69,9 @@ function initializeToolsDropdownLine() {
 anchors.forEach((link) => {
   link.addEventListener('pointerleave', () => {
     link.blur();
-    document.querySelector('.primary-hero button').blur();
+    document.querySelectorAll('.hero').forEach((hero) => {
+      hero.querySelector('button').blur();
+    });
   });
 });
 
@@ -135,21 +137,30 @@ navMenuWrappers.forEach((paragraph, index) => {
 });
 
 // Language switch functionality
-nonActiveLang.addEventListener('click', () => {
-  if (activeLanguage.innerText === 'ქარ') {
-    activeLanguage.innerText = 'ENG';
-    nonActiveLang.innerText = 'ქარ';
+function switchLanguage() {
+  const currentLang = activeLangs[0].innerText;
+  const newActiveLang = currentLang === 'ქარ' ? 'ENG' : 'ქარ';
+  const newNonActiveLang = currentLang === 'ქარ' ? 'ქარ' : 'ENG';
+
+  activeLangs.forEach((lang) => (lang.innerText = newActiveLang));
+  nonActiveLangs.forEach((lang) => (lang.innerText = newNonActiveLang));
+
+  if (currentLang === 'ქარ') {
     geoContent.forEach((element) => element.classList.remove('active'));
     engContent.forEach((element) => element.classList.add('active'));
     changeLanguageToEnglish();
   } else {
-    activeLanguage.innerText = 'ქარ';
-    nonActiveLang.innerText = 'ENG';
     engContent.forEach((element) => element.classList.remove('active'));
     geoContent.forEach((element) => element.classList.add('active'));
     changeLanguageToGeorgian();
   }
-});
+}
+
+// Add click event listeners to all language elements
+activeLangs.forEach((lang) => lang.addEventListener('click', switchLanguage));
+nonActiveLangs.forEach((lang) =>
+  lang.addEventListener('click', switchLanguage)
+);
 
 // Tools dropdown functionality
 toolsDropdown.addEventListener('click', () => {
@@ -187,7 +198,7 @@ dropdownMenuElements.forEach((element, index) => {
 // Kit containers click functionality
 kitContainers.forEach((kit) => {
   kit.addEventListener('click', () => {
-    const lang = activeLanguage.innerText === 'ქარ' ? 'ge' : 'en';
+    const lang = activeLangs[0].innerText === 'ქარ' ? 'ge' : 'en';
     let url;
     if (kit.classList.contains('1')) {
       url = `https://tbcconcept.ge/${lang}/singleview/245-digital-kit`;
@@ -359,6 +370,7 @@ class Slider {
     this.sliderCont.style.cursor = 'grab';
     this.thumb.style.cursor = 'grab';
     this.track.style.cursor = 'grab';
+
     this.movedLeft = false;
     this.movedRight = false;
   }
