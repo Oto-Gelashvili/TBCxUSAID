@@ -1482,7 +1482,8 @@
             </div>
             <div class="form-container">
                 <div class="form-header">
-                    <h2>დაგვიკავშირდით</h2>
+                    <h2 class="geo active">დაგვიკავშირდით</h2>
+                    <h2 class="eng">Get in touch</h2>
                     <div class="x-mark-cont">
                         <svg class="x-mark-2" data-v-42e74cda="" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -1500,32 +1501,48 @@
                     </div>
                 </div>
                 <div class="form-main">
-                    <p class="form-main-title">დაგვიკავშირდით</p>
+                    <p class="form-main-title active geo">დაგვიკავშირდით</p>
+                    <p class="form-main-title eng">Get in touch</p>
                     <form id="userForm">
                         <div class="input-container">
-                            <label for="firstName/lastName">სახელი და გვარი <span>*</span></label>
+                            <label for="firstName/lastName">
+                                <p class="active geo">სახელი და გვარი <span>*</span></p>
+                                <p class=" eng">Name and Surname <span>*</span></p>
+                            </label>
                             <input type="text" id="firstName" name="firstName" required class="input-element">
                             <span class="error">აუცილებელი ველი</span>
                         </div>
                         <div class="input-container">
-                            <label for="phoneNumber">ნომერი <span>*</span></label>
+                            <label for="phoneNumber">
+                                <p class="geo active">ნომერი <span>*</span></p>
+                                <p class="eng">Number <span>*</span></p>
+                            </label>
                             <input type="tel" id="phoneNumber" name="phoneNumber" pattern="[0-9]*" inputmode="numeric"
                                 required class="input-element">
                             <span class="error">აუცილებელი ველი</span>
                         </div>
                         <div class="input-container">
-                            <label for="email">ელ.ფოსტა <span>*</span></label>
+                            <label for="email">
+                                <p class="geo active">ელ.ფოსტა <span>*</span></p>
+                                <p class="eng">Gmail <span>*</span></p>
+                            </label>
                             <input type="email" id="email" name="email" required class="input-element">
                             <span class="error">აუცილებელი ველი</span>
                         </div>
                         <div class="input-container">
-                            <label for="company">კომპანია </label>
+                            <label for="company">
+                                <p class="geo active">კომპანია</p>
+                                <p class="eng">company</p>
+                            </label>
                             <input type="text" id="company" name="company" required class="input-element">
                             <span class="error"></span>
 
                         </div>
                         <div class="input-container input-container-text-area">
-                            <label for="text">ტექსტი <span>*</span></label>
+                            <label for="text">
+                                <p class="geo active">ტექსტი <span>*</span></p>
+                                <p class="eng">Text <span>*</span></p>
+                            </label>
                             <textarea maxlength="100" rows="4" id="text" name="text" required
                                 class="input-element"></textarea>
                             <p class="char-count">0/100</p>
@@ -1533,8 +1550,14 @@
                         </div>
                         <div class="permission">
                             <input type="checkbox" id="permission" name="permission">
-                            <label for="permission">ვეთახნმები</label>
-                            <a class="permission-laws" href="https://tbcconcept.ge/ge/terms">წესები და პირობები</a>
+                            <label for="permission">
+                                <p class="geo active">ვეთახნმები</p>
+                                <p class="eng">I agree</p>
+                            </label>
+                            <a class="permission-laws" href="https://tbcconcept.ge/ge/terms">
+                                <p class="geo active">წესები და პირობები</p>
+                                <p class="eng">Terms and Conditions</p>
+                            </a>
                         </div>
                         <!-- [recaptcha to be added after page is published] -->
                         <div class="btn-container">
@@ -1545,7 +1568,8 @@
                                         d="M9.7987 2.86675L14.4654 7.53341C14.732 7.80008 14.732 8.20008 14.4654 8.46675L9.7987 13.1334C9.53203 13.4001 9.13203 13.4001 8.86537 13.1334C8.5987 12.8667 8.5987 12.4667 8.86537 12.2001L12.3987 8.66675H1.9987C1.5987 8.66675 1.33203 8.40008 1.33203 8.00008C1.33203 7.60008 1.5987 7.33341 1.9987 7.33341H12.3987L8.86537 3.80008C8.73203 3.66675 8.66536 3.53341 8.66536 3.33341C8.66536 3.13341 8.73203 3.00008 8.86537 2.86675C9.13203 2.60008 9.53203 2.60008 9.7987 2.86675Z">
                                     </path>
                                 </svg>
-                                <p>გაგზავნა</p>
+                                <p class="geo active">გაგზავნა</p>
+                                <p class="eng">Send</p>
                             </button>
                         </div>
                 </div>

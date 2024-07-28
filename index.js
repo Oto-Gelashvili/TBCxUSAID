@@ -630,17 +630,28 @@ function validate(input) {
   }
 }
 
-function getErrorMessage(input) {
+function getErrorMessage(input, currentLang) {
+  const isGeorgian = activeLangs[0].innerText === 'ქარ';
+  const messages = {
+    required: isGeorgian ? 'აუცილებელი ველი' : 'This field is required',
+    tel: isGeorgian
+      ? 'ნომერი მინიმუმ 9 ციფრს უნდა შეიცავდეს'
+      : 'The number must be at least 9 digits',
+    email: isGeorgian
+      ? 'გთხოვთ მიუთითოთ რეალური მეილი'
+      : 'Please enter a valid email address',
+  };
+
   if (input.value.trim() === '') {
-    return 'აუცილებელი ველი';
+    return messages.required;
   }
   switch (input.type) {
     case 'tel':
-      return 'Phone number must be at least 9 digits';
+      return messages.tel;
     case 'email':
-      return 'Please enter a valid email address';
+      return messages.email;
     default:
-      return 'აუცილებელი ველი';
+      return messages.required;
   }
 }
 
