@@ -31,6 +31,9 @@ const tracks = document.querySelectorAll('.scrollbar-track');
 const carouselItems = document.querySelectorAll('.offers-carousel-item');
 const numOfImagesArray = [6, 3, 4];
 
+const infoContainer = document.querySelector('.info-menu-wrapper');
+const infoBtns = document.querySelector('.info-buttons');
+
 // Utility Functions
 function hideActive() {
   underlines.forEach((underline) => (underline.style.transform = 'scaleX(0)'));
@@ -101,7 +104,37 @@ function changeLanguageToGeorgian() {
 // Event Listeners
 
 // Initialization
-document.addEventListener('DOMContentLoaded', initializeToolsDropdownLine);
+document.addEventListener('DOMContentLoaded', function () {
+  initializeToolsDropdownLine();
+  initializeCookieConsent();
+});
+
+//cookies
+function initializeCookieConsent() {
+  const consentBanner = document.querySelector('.cookies-banner-wrapper');
+  const acceptButton = document.querySelector('.accept-cookies');
+
+  // Check if user has already given consent
+  if (!localStorage.getItem('cookieConsent') && consentBanner) {
+    consentBanner.style.display = 'flex';
+  } else {
+    consentBanner.style.display = 'none';
+  }
+
+  if (acceptButton) {
+    // Cookie consent functionality
+    acceptButton.addEventListener('click', function () {
+      localStorage.setItem('cookieConsent', 'true');
+      consentBanner.style.display = 'none';
+      // cookies or tracking scripts
+    });
+
+    // Focus management
+    acceptButton.addEventListener('pointerleave', () => {
+      acceptButton.blur();
+    });
+  }
+}
 
 // Global click handler to hide menu
 document.addEventListener('click', hideActive);
@@ -277,31 +310,41 @@ class Slider {
   }
   initEvents() {
     this.sliderCont.addEventListener('mousedown', (e) => this.draggingStart(e));
-    this.sliderCont.addEventListener('touchstart', (e) =>
-      this.draggingStart(e.touches[0])
+    this.sliderCont.addEventListener(
+      'touchstart',
+      (e) => this.draggingStart(e.touches[0]),
+      { passive: true }
     );
 
     this.slider.addEventListener('mousedown', (e) => this.draggingStart(e));
-    this.slider.addEventListener('touchstart', (e) =>
-      this.draggingStart(e.touches[0])
+    this.slider.addEventListener(
+      'touchstart',
+      (e) => this.draggingStart(e.touches[0]),
+      { passive: true }
     );
 
     this.thumb.addEventListener('mousedown', (e) => this.draggingStart(e));
-    this.thumb.addEventListener('touchstart', (e) =>
-      this.draggingStart(e.touches[0])
+    this.thumb.addEventListener(
+      'touchstart',
+      (e) => this.draggingStart(e.touches[0]),
+      { passive: true }
     );
 
     this.track.addEventListener('mousedown', (e) => this.draggingStart(e));
-    this.track.addEventListener('touchstart', (e) =>
-      this.draggingStart(e.touches[0])
+    this.track.addEventListener(
+      'touchstart',
+      (e) => this.draggingStart(e.touches[0]),
+      { passive: true }
     );
+
     document.addEventListener(
       'mousemove',
       (e) => this.isDragging && this.slide(e)
     );
     document.addEventListener(
       'touchmove',
-      (e) => this.isDragging && this.slide(e.touches[0])
+      (e) => this.isDragging && this.slide(e.touches[0]),
+      { passive: true }
     );
 
     document.addEventListener(
@@ -312,6 +355,7 @@ class Slider {
       'touchend',
       () => this.isDragging && this.endDragging()
     );
+
     this.arrowSvgs.forEach((svg, index) => {
       svg.addEventListener('click', () => this.handleArrowClick(index));
     });
@@ -474,4 +518,215 @@ document.querySelector('.low').addEventListener('click', function () {
     window.location.href =
       'https://play.google.com/store/apps/details?id=com.icomvision.bsc.tbc&hl=en';
   }
+});
+
+//info-menu
+let isVisible = false;
+const dots = document.querySelector('.dots');
+const xMark = document.querySelector('.x-mark');
+infoContainer.addEventListener('click', () => {
+  if (!isVisible) {
+    infoBtns.style.visibility = 'visible';
+    infoBtns.style.opacity = '1';
+    infoBtns.style.maxHeight = 'fit-content';
+    dots.style.maxHeight = '0';
+    dots.style.maxWidth = '0';
+    dots.style.opacity = '0';
+    dots.style.visibility = 'hidden';
+    xMark.style.maxHeight = 'fit-content';
+    xMark.style.maxWidth = 'fit-content';
+    xMark.style.opacity = '1';
+    xMark.style.visibility = 'visible';
+    infoBtns.style.overflow = 'visible';
+  } else {
+    infoBtns.style.overflow = 'hidden';
+
+    infoBtns.style.opacity = '0';
+    infoBtns.style.visibility = 'hidden';
+    infoBtns.style.maxHeight = '0';
+    xMark.style.maxHeight = '0';
+    xMark.style.maxWidth = '0';
+    xMark.style.opacity = '0';
+    xMark.style.visibility = 'hidden';
+    dots.style.maxHeight = 'fit-content';
+    dots.style.maxWidth = 'fit-content';
+    dots.style.opacity = '1';
+    dots.style.visibility = 'visible';
+  }
+  isVisible = !isVisible;
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Select all elements with overflow set to auto or scroll
+  const scrollableElements = document.querySelectorAll('*');
+
+  let isScrolling;
+
+  scrollableElements.forEach((element) => {
+    if (
+      getComputedStyle(element).overflowY === 'auto' ||
+      getComputedStyle(element).overflowY === 'scroll'
+    ) {
+      element.addEventListener('scroll', function () {
+        element.classList.add('scrolling');
+
+        // Clear the existing timeout
+        window.clearTimeout(isScrolling);
+
+        // Set a timeout to run after scrolling ends
+        isScrolling = setTimeout(function () {
+          element.classList.remove('scrolling');
+        }, 1000); // Adjust time as needed
+      });
+    }
+  });
+});
+
+//form
+
+const inputConts = document.querySelectorAll('.input-container');
+const labels = document.querySelectorAll('.input-container label');
+const inputs = document.querySelectorAll('.input-container .input-element');
+const errors = document.querySelectorAll('.error');
+const form = document.getElementById('userForm');
+const textArea = document.querySelector('textarea');
+const charcount = document.querySelector('.char-count');
+const checkbox = document.getElementById('permission');
+const xMarkCont = document.querySelector('.x-mark-cont');
+const formLink = document.querySelector('.form-link');
+
+function validateName(input) {
+  return input.value.trim() !== '';
+}
+
+function validateNumber(input) {
+  if (input.value.trim() === '') return false;
+  return input.value.length >= 9 && !isNaN(input.value);
+}
+
+function validateEmail(input) {
+  if (input.value.trim() === '') return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(input.value);
+}
+
+function validateTextArea(input) {
+  return input.value.trim() !== '';
+}
+
+function validate(input) {
+  switch (input.type) {
+    case 'text':
+      if (input.name === 'company') return true; // No validation for company
+      return validateName(input);
+    case 'tel':
+      return validateNumber(input);
+    case 'email':
+      return validateEmail(input);
+    case 'textarea':
+      return validateTextArea(input);
+    default:
+      return true;
+  }
+}
+
+function getErrorMessage(input) {
+  if (input.value.trim() === '') {
+    return 'აუცილებელი ველი';
+  }
+  switch (input.type) {
+    case 'tel':
+      return 'Phone number must be at least 9 digits';
+    case 'email':
+      return 'Please enter a valid email address';
+    default:
+      return 'აუცილებელი ველი';
+  }
+}
+
+inputConts.forEach((inputCont, index) => {
+  inputCont.addEventListener('click', () => {
+    labels[index].style.fontSize = '1rem';
+    labels[index].style.top = '5px';
+    inputs[index].style.borderColor = '#308fc6';
+  });
+
+  inputs[index].addEventListener('blur', () => {
+    if (inputs[index].value === '') {
+      labels[index].style.fontSize = '';
+      labels[index].style.top = '';
+    }
+
+    if (validate(inputs[index])) {
+      inputs[index].style.borderColor = '';
+      errors[index].style.display = 'none';
+    } else {
+      inputs[index].style.borderColor = '#da1a1c';
+      errors[index].textContent = getErrorMessage(inputs[index]);
+      errors[index].style.display = 'block';
+    }
+  });
+});
+
+// Add this function to sanitize inputs
+function sanitizeInput(input) {
+  if (input.type === 'tel') {
+    input.value = input.value.replace(/[^0-9]/g, '');
+  } else if (input.name === 'firstName') {
+    input.value = input.value.replace(/[^A-Za-z ]/g, '');
+  }
+}
+// Add event listeners for input sanitization
+inputs.forEach((input) => {
+  input.addEventListener('input', function () {
+    sanitizeInput(this);
+    updateSubmitButton();
+  });
+});
+
+// charcount
+
+textArea.addEventListener('input', () => {
+  charcount.innerText = `${textArea.value.length}/100`;
+});
+
+const submitButton = form.querySelector('button[type="submit"]');
+
+function validateForm() {
+  let isValid = true;
+
+  inputs.forEach((input) => {
+    if (input.required && !validate(input)) {
+      isValid = false;
+    }
+  });
+
+  if (!checkbox.checked) {
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+function updateSubmitButton() {
+  if (validateForm()) {
+    submitButton.classList.add('activeBtn');
+  } else {
+    submitButton.classList.remove('activeBtn');
+  }
+}
+
+checkbox.addEventListener('change', updateSubmitButton);
+// Prevent form submission if validation fails
+form.addEventListener('submit', function (e) {
+  if (!validateForm()) {
+    e.preventDefault();
+  }
+});
+// form opening/closure
+formLink.addEventListener('click', () => {
+  document.querySelector('.form-container').style.display = 'flex';
+});
+xMarkCont.addEventListener('click', () => {
+  document.querySelector('.form-container').style.display = 'none';
 });
